@@ -203,8 +203,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        if (!isSessionValid()) {
-          // Session expired, logout
+        // Se l'utente si è appena autenticato, non controllare la validità della sessione
+        const sessionStart = localStorage.getItem('sessionStart');
+        
+        if (sessionStart && !isSessionValid()) {
+          // Session expired, logout solo se esisteva già una sessione
           try {
             await logout();
           } catch (error) {
@@ -212,6 +215,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           return;
         }
+        
+        // Imposta il timeout di sessione per utenti autenticati
         setSessionTimeout(() => logout());
       }
       
