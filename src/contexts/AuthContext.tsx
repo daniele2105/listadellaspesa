@@ -133,31 +133,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       prompt: 'select_account'
     });
     
+    // Usa redirect su mobile/produzione, popup su desktop/sviluppo
+    const useRedirect = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     window.location.hostname !== 'localhost';
+    
     try {
-      const userCredential = await signInWithPopup(auth, provider);
-      const user = userCredential.user;
-      
-      await createUserProfile(user);
-      setSessionTimeout(() => logout());
-      
-      return user;
+      if (useRedirect) {
+        await signInWithRedirect(auth, provider);
+        return null; // Il redirect gestirà l'auth
+      } else {
+        const userCredential = await signInWithPopup(auth, provider);
+        const user = userCredential.user;
+        
+        await createUserProfile(user);
+        setSessionTimeout(() => logout());
+        
+        return user;
+      }
     } catch (error: any) {
       console.error('Errore Google Auth:', error);
       
-      // Fallback per popup bloccati o errori COOP
+      // Fallback a redirect se popup fallisce
       if (error.code === 'auth/popup-blocked' || 
           error.code === 'auth/popup-closed-by-user' ||
-          error.code === 'auth/unauthorized-domain' ||
-          error.message?.includes('Cross-Origin-Opener-Policy')) {
+          error.code === 'auth/unauthorized-domain') {
         
-        console.log('Tentativo con redirect...');
-        try {
-          await signInWithRedirect(auth, provider);
-          return null; // Il redirect gestirà l'auth
-        } catch (redirectError) {
-          console.error('Errore anche con redirect:', redirectError);
-          throw new Error('Impossibile completare il login Google. Verifica le impostazioni del browser.');
-        }
+        console.log('Fallback a redirect...');
+        await signInWithRedirect(auth, provider);
+        return null;
       }
       
       throw error;
