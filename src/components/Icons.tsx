@@ -1,0 +1,25 @@
+// Importa solo le icone necessarie per tree shaking ottimale
+export { 
+  Plus,
+  ShoppingBag,
+  ShoppingCart,
+  Clock,
+  Share2,
+  MoreVertical,
+  Trash2,
+  Users,
+  Edit,
+  AlertCircle,
+  CheckCircle,
+  Circle,
+  User,
+  X,
+  ArrowLeft,
+  Search,
+  Mail,
+  Lock,
+  LogIn,
+  UserPlus,
+  Menu,
+  LogOut
+} from 'lucide-react';

@@ -1,36 +1,64 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Shopping Lists Collection
-    match /shoppingLists/{listId} {
-      // Allow read if user is owner or in sharedWith array
-      allow read: if request.auth != null && 
-        (resource.data.ownerId == request.auth.uid || 
-         request.auth.uid in resource.data.sharedWith);
-      
-      // Allow create if user is authenticated and sets themselves as owner
-      allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.ownerId &&
-        request.resource.data.keys().hasAll(['name', 'ownerId', 'sharedWith', 'products', 'createdAt', 'updatedAt']);
-      
-      // Allow update if user is owner or in sharedWith array
-      allow update: if request.auth != null && 
-        (resource.data.ownerId == request.auth.uid || 
-         request.auth.uid in resource.data.sharedWith) &&
-        // Prevent changing ownership
-        resource.data.ownerId == request.resource.data.ownerId;
-      
-      // Allow delete only if user is owner
-      allow delete: if request.auth != null && 
-        resource.data.ownerId == request.auth.uid;
+    // Funzioni helper per validazione
+    function isAuthenticated() {
+      return request.auth != null;
     }
     
-    // Users Collection (for storing user profiles)
+    function isOwner(resource) {
+      return request.auth.uid == resource.data.ownerId;
+    }
+    
+    function isSharedUser(resource) {
+      return request.auth.uid in resource.data.sharedWith;
+    }
+    
+    function hasValidFields(requiredFields) {
+      return request.resource.data.keys().hasAll(requiredFields);
+    }
+    
+    function isValidListName() {
+      return request.resource.data.name is string && 
+             request.resource.data.name.size() > 0 && 
+             request.resource.data.name.size() <= 100;
+    }
+    
+    function isValidSharedWith() {
+      return request.resource.data.sharedWith is list && 
+             request.resource.data.sharedWith.size() <= 10;
+    }
+    
+    // Shopping Lists Collection
+    match /shoppingLists/{listId} {
+      allow read: if isAuthenticated() && 
+        (isOwner(resource) || isSharedUser(resource));
+      
+      allow create: if isAuthenticated() && 
+        request.auth.uid == request.resource.data.ownerId &&
+        hasValidFields(['name', 'ownerId', 'sharedWith', 'products', 'createdAt', 'updatedAt']) &&
+        isValidListName() &&
+        isValidSharedWith() &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time;
+      
+      allow update: if isAuthenticated() && 
+        (isOwner(resource) || isSharedUser(resource)) &&
+        resource.data.ownerId == request.resource.data.ownerId &&
+        isValidListName() &&
+        isValidSharedWith() &&
+        request.resource.data.updatedAt == request.time;
+      
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+    
+    // Users Collection
     match /users/{userId} {
-      // Users can read and write their own profile
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      // Allow reading other users' profiles for sharing functionality
-      allow read: if request.auth != null;
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && 
+        request.auth.uid == userId &&
+        request.resource.data.keys().hasAll(['email', 'displayName', 'createdAt']);
+      // Rimuovi l'accesso di lettura globale per altri utenti
     }
     
     // Deny all other access
