@@ -134,45 +134,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       prompt: 'select_account'
     });
     
-    const useRedirect = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                   window.location.hostname !== 'localhost';
-    
-    console.log('📱 useRedirect:', useRedirect);
-    console.log('🌐 hostname:', window.location.hostname);
-    
     try {
-      if (useRedirect) {
-        console.log('🔄 Usando signInWithRedirect');
-        await signInWithRedirect(auth, provider);
-        return null;
-      } else {
-        console.log('🪟 Usando signInWithPopup');
-        const userCredential = await signInWithPopup(auth, provider);
-        const user = userCredential.user;
-        
-        console.log('✅ Popup completato, utente:', user.email);
-        
-        await createUserProfile(user);
-        setSessionTimeout(() => logout());
-        
-        console.log('✅ Profilo creato e sessione impostata');
-        return user;
-      }
+      console.log('🪟 Usando sempre signInWithPopup per debug');
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+      
+      console.log('✅ Google login successful:', user.email);
+      
+      // Rimuovi qualsiasi sessione precedente
+      localStorage.removeItem('sessionStart');
+      
+      await createUserProfile(user);
+      
+      // Imposta nuova sessione
+      localStorage.setItem('sessionStart', Date.now().toString());
+      setSessionTimeout(() => logout());
+      
+      console.log('✅ Profilo creato e sessione impostata');
+      return user;
     } catch (error: any) {
-      console.error('❌ Errore Google Auth:', error);
-      console.error('❌ Error code:', error.code);
-      console.error('❌ Error message:', error.message);
-      
-      // Fallback a redirect se popup fallisce
-      if (error.code === 'auth/popup-blocked' || 
-          error.code === 'auth/popup-closed-by-user' ||
-          error.code === 'auth/unauthorized-domain') {
-        
-        console.log('🔄 Fallback a redirect...');
-        await signInWithRedirect(auth, provider);
-        return null;
-      }
-      
+      console.error('❌ Google login failed:', error);
       throw error;
     }
   }
@@ -203,7 +184,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .then(async (result) => {
         if (result) {
           const user = result.user;
+          localStorage.removeItem('sessionStart');
           await createUserProfile(user);
+          localStorage.setItem('sessionStart', Date.now().toString());
           setSessionTimeout(() => logout());
         }
       })
@@ -213,11 +196,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Se l'utente si è appena autenticato, non controllare la validità della sessione
+        // NON controllare la validità della sessione per nuovi login
         const sessionStart = localStorage.getItem('sessionStart');
         
-        if (sessionStart && !isSessionValid()) {
-          // Session expired, logout solo se esisteva già una sessione
+        // Solo se esiste una sessione precedente E è scaduta
+        if (sessionStart && (Date.now() - parseInt(sessionStart)) > 24 * 60 * 60 * 1000) {
+          console.log('⏰ Sessione scaduta, logout automatico');
           try {
             await logout();
           } catch (error) {
@@ -226,14 +210,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
         
-        // Imposta il timeout di sessione per utenti autenticati
+        // Se non c'è sessionStart, crealo (nuovo login)
+        if (!sessionStart) {
+          localStorage.setItem('sessionStart', Date.now().toString());
+        }
+        
+        // Imposta il timeout di sessione
         setSessionTimeout(() => logout());
       }
       
       setCurrentUser(user);
       setLoading(false);
     });
-  
+
     return unsubscribe;
   }, []);
 
