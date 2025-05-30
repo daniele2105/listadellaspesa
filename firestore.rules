@@ -55,10 +55,10 @@ service cloud.firestore {
     // Users Collection
     match /users/{userId} {
       allow read: if isAuthenticated() && request.auth.uid == userId;
-      allow write: if isAuthenticated() && 
-        request.auth.uid == userId &&
-        request.resource.data.keys().hasAll(['email', 'displayName', 'createdAt']);
-      // Rimuovi l'accesso di lettura globale per altri utenti
+      allow create: if isAuthenticated() && 
+        request.auth.uid == userId;
+      allow update: if isAuthenticated() && 
+        request.auth.uid == userId;
     }
     
     // Deny all other access

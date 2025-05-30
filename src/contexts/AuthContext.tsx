@@ -1,23 +1,25 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  sendEmailVerification,
   GoogleAuthProvider,
   signInWithPopup,
-  sendEmailVerification,
+  signInWithRedirect,
+  getRedirectResult,
   User
 } from 'firebase/auth';
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
 
 interface AuthContextType {
-  currentUser: User | null;
+  currentUser: User | null;  // Usa User invece di import('firebase/auth').User
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  loginWithGoogle: () => Promise<User>;
-  register: (email: string, password: string, displayName: string) => Promise<{ user: User; emailSent: boolean }>; // Aggiunto displayName
+  loginWithGoogle: () => Promise<User | null>;  // Può restituire null per redirect
+  register: (email: string, password: string, displayName: string) => Promise<{ user: User; emailSent: boolean }>;
   logout: () => Promise<void>;
   resendVerificationEmail: () => Promise<void>;
 }
@@ -25,15 +27,19 @@ interface AuthContextType {
 // Helper function to create user profile
 async function createUserProfile(user: User, displayName?: string) {
   try {
-    await setDoc(doc(db, 'users', user.uid), {
+    const userData = {
       email: user.email,
       uid: user.uid,
       displayName: displayName || user.displayName || user.email?.split('@')[0] || 'Utente',
       createdAt: Timestamp.now(),
       lastLogin: Timestamp.now()
-    }, { merge: true });
+    };
+    
+    await setDoc(doc(db, 'users', user.uid), userData, { merge: true });
+    console.log('User profile created successfully');
   } catch (error) {
     console.error('Error creating user profile:', error);
+    // Non bloccare il login se la creazione del profilo fallisce
   }
 }
 
@@ -123,17 +129,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function loginWithGoogle() {
     const provider = new GoogleAuthProvider();
-    // Prova con redirect invece di popup
-    const userCredential = await signInWithRedirect(auth, provider);
-    const user = userCredential.user;
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
     
-    // Create user profile in Firestore
-    await createUserProfile(user);
-    
-    // Set session timeout
-    setSessionTimeout(() => logout());
-    
-    return user;
+    try {
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+      
+      await createUserProfile(user);
+      setSessionTimeout(() => logout());
+      
+      return user;
+    } catch (error: any) {
+      console.error('Errore Google Auth:', error);
+      
+      // Fallback per popup bloccati o errori COOP
+      if (error.code === 'auth/popup-blocked' || 
+          error.code === 'auth/popup-closed-by-user' ||
+          error.code === 'auth/unauthorized-domain' ||
+          error.message?.includes('Cross-Origin-Opener-Policy')) {
+        
+        console.log('Tentativo con redirect...');
+        try {
+          await signInWithRedirect(auth, provider);
+          return null; // Il redirect gestirà l'auth
+        } catch (redirectError) {
+          console.error('Errore anche con redirect:', redirectError);
+          throw new Error('Impossibile completare il login Google. Verifica le impostazioni del browser.');
+        }
+      }
+      
+      throw error;
+    }
   }
 
   async function logout() {
@@ -157,23 +185,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
+    // Gestisci risultato redirect Google
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result) {
+          const user = result.user;
+          await createUserProfile(user);
+          setSessionTimeout(() => logout());
+        }
+      })
+      .catch((error) => {
+        console.error('Errore redirect Google:', error);
+      });
+  
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Check if session is still valid
         if (!isSessionValid()) {
           // Session expired, logout
-          logout();
+          try {
+            await logout();
+          } catch (error) {
+            console.error('Errore durante logout automatico:', error);
+          }
           return;
         }
-        
-        // If user is logged in and session is valid, set/reset timeout
         setSessionTimeout(() => logout());
       }
       
       setCurrentUser(user);
       setLoading(false);
     });
-
+  
     return unsubscribe;
   }, []);
 
