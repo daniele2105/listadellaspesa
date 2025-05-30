@@ -393,7 +393,44 @@ export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
     addProduct,
     updateProduct,
     deleteProduct,
-    shareList,
+    shareList: async (listId: string, email: string): Promise<void> => {
+      if (!currentUser) throw new Error('User not authenticated');
+      
+      try {
+        const userInfo = await getUserInfoByEmail(email);
+        if (!userInfo) {
+          throw new Error('Utente non trovato');
+        }
+        
+        const listRef = doc(db, 'shoppingLists', listId);
+        
+        const currentUserQuery = query(
+          collection(db, 'users'),
+          where('uid', '==', currentUser.uid)
+        );
+        
+        const snapshot = await new Promise<any>((resolve, reject) => {
+          const unsubscribe = onSnapshot(currentUserQuery, (snap) => {
+            unsubscribe();
+            resolve(snap);
+          }, reject);
+        });
+
+        let ownerDisplayName = 'Utente';
+        if (!snapshot.empty) {
+          const userData = snapshot.docs[0].data();
+          ownerDisplayName = userData.displayName || userData.email?.split('@')[0] || 'Utente';
+        }
+        
+        await updateDoc(listRef, {
+          sharedWith: arrayUnion(userInfo.uid),
+          ownerDisplayName: ownerDisplayName
+        });
+      } catch (error) {
+        console.error('Error sharing list:', error);
+        throw error;
+      }
+    },
     removeSharedUser,
     loading,
     error

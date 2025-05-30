@@ -123,7 +123,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function loginWithGoogle() {
     const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
+    // Prova con redirect invece di popup
+    const userCredential = await signInWithRedirect(auth, provider);
     const user = userCredential.user;
     
     // Create user profile in Firestore
