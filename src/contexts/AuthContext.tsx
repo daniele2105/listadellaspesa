@@ -128,37 +128,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function loginWithGoogle() {
+    console.log('🚀 Inizio loginWithGoogle');
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({
       prompt: 'select_account'
     });
     
-    // Usa redirect su mobile/produzione, popup su desktop/sviluppo
     const useRedirect = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                     window.location.hostname !== 'localhost';
+                   window.location.hostname !== 'localhost';
+    
+    console.log('📱 useRedirect:', useRedirect);
+    console.log('🌐 hostname:', window.location.hostname);
     
     try {
       if (useRedirect) {
+        console.log('🔄 Usando signInWithRedirect');
         await signInWithRedirect(auth, provider);
-        return null; // Il redirect gestirà l'auth
+        return null;
       } else {
+        console.log('🪟 Usando signInWithPopup');
         const userCredential = await signInWithPopup(auth, provider);
         const user = userCredential.user;
+        
+        console.log('✅ Popup completato, utente:', user.email);
         
         await createUserProfile(user);
         setSessionTimeout(() => logout());
         
+        console.log('✅ Profilo creato e sessione impostata');
         return user;
       }
     } catch (error: any) {
-      console.error('Errore Google Auth:', error);
+      console.error('❌ Errore Google Auth:', error);
+      console.error('❌ Error code:', error.code);
+      console.error('❌ Error message:', error.message);
       
       // Fallback a redirect se popup fallisce
       if (error.code === 'auth/popup-blocked' || 
           error.code === 'auth/popup-closed-by-user' ||
           error.code === 'auth/unauthorized-domain') {
         
-        console.log('Fallback a redirect...');
+        console.log('🔄 Fallback a redirect...');
         await signInWithRedirect(auth, provider);
         return null;
       }
