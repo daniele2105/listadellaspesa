@@ -38,22 +38,48 @@ const Login: React.FC = () => {
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
-      await loginWithGoogle();
+      setError('');
+      console.log('Tentativo di accesso Google...');
+      const user = await loginWithGoogle();
+      console.log('Accesso Google riuscito:', user);
       navigate('/dashboard');
-    } catch (err) {
-      setError('Accesso con Google fallito. Riprova.');
-      console.error(err);
+    } catch (err: any) {
+      console.error('Errore dettagliato Google Auth:', err);
+      console.error('Codice errore:', err.code);
+      console.error('Messaggio errore:', err.message);
+      
+      let errorMessage = 'Accesso con Google fallito. Riprova.';
+      
+      if (err.code === 'auth/popup-blocked') {
+        errorMessage = 'Popup bloccato dal browser. Abilita i popup per questo sito.';
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Accesso annullato dall\'utente.';
+      } else if (err.code === 'auth/unauthorized-domain') {
+        errorMessage = 'Dominio non autorizzato. Contatta l\'amministratore.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
   
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow">
+    <div 
+      className="min-h-screen flex flex-col"
+      style={{
+        backgroundImage: 'url(/neon-background.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+        {/* Overlay scuro per migliorare la leggibilità */}
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        
+        <div className="max-w-md w-full space-y-8 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-8 rounded-xl shadow-2xl border border-white/20 relative z-10">
           <div className="text-center">
             <div className="flex justify-center">
               <ShoppingCart className="h-12 w-12 text-primary-500" />
@@ -185,8 +211,6 @@ const Login: React.FC = () => {
           </div>
         </div>
       </main>
-      
-      <Footer />
     </div>
   );
 };

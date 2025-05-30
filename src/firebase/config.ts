@@ -1,25 +1,30 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
 
-// Firebase configuration
+// Configurazione Firebase con variabili d'ambiente
 const firebaseConfig = {
-  apiKey: "AIzaSyBymLTV-JnpCWn8Lm9I_OMpdBpBshd42G4",
-  authDomain: "shopping-list-50fab.firebaseapp.com",
-  projectId: "shopping-list-50fab",
-  storageBucket: "shopping-list-50fab.firebasestorage.app",
-  messagingSenderId: "392918381659",
-  appId: "1:392918381659:web:abfcfd7503ab6abf07bb7e",
-  measurementId: "G-K1ZY4R2RGN"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
+// Inizializza Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase services
+// Inizializza i servizi Firebase
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const analytics = getAnalytics(app);
+
+// Configura la persistenza dell'autenticazione
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error('Error setting auth persistence:', error);
+});
 
 export default app;

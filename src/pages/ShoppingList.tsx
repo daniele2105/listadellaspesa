@@ -512,7 +512,8 @@ export const ShoppingListPage: React.FC = () => {
     );
   }
   
-  const isOwner = currentList.owner === currentUser?.email;
+  // Fixed: Check if current user is owner using UID instead of email
+  const isOwner = currentList.ownerId === currentUser?.uid;
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -540,8 +541,12 @@ export const ShoppingListPage: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <Share2 className="h-4 w-4 mr-1" />
-                    <span>Condivisa da {currentList.owner?.split('@')[0]}</span>
+                    {currentList.ownerDisplayName && (
+                      <>
+                        <Share2 className="h-4 w-4 mr-1" />
+                        <span>Condivisa da {currentList.ownerDisplayName}</span>
+                      </>
+                    )}
                   </>
                 )}
               </div>
@@ -609,7 +614,7 @@ export const ShoppingListPage: React.FC = () => {
               </div>
               
               <form onSubmit={handleAddProduct}>
-                <div className="space-y-4">
+                <div>
                   <div>
                     <label htmlFor="productName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Nome prodotto
@@ -824,20 +829,22 @@ export const ShoppingListPage: React.FC = () => {
                     </div>
                   </form>
                   
-                  {/* Shared Users List */}
+                  {/* Shared Users List - Note: This will need to be updated to show emails instead of UIDs */}
                   {currentList.sharedWith && currentList.sharedWith.length > 0 && (
                     <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                       <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                         Condivisa con:
                       </h3>
                       <div className="space-y-2">
-                        {currentList.sharedWith.map((email) => (
-                          <div key={email} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        {/* Note: sharedWith now contains UIDs, you'll need to implement a way to display emails */}
+                        {currentList.sharedWith.map((userId) => (
+                          <div key={userId} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <span className="text-sm text-gray-600 dark:text-gray-300">
-                              {email}
+                              {/* This will show UID for now - you might want to implement email lookup */}
+                              Utente: {userId.substring(0, 8)}...
                             </span>
                             <button
-                              onClick={() => handleRemoveSharedUser(email)}
+                              onClick={() => handleRemoveSharedUser(userId)}
                               className="p-1 text-gray-400 hover:text-red-500 rounded"
                             >
                               <X className="h-4 w-4" />
@@ -858,4 +865,5 @@ export const ShoppingListPage: React.FC = () => {
     </div>
   );
 };
+
 export default ShoppingListPage;

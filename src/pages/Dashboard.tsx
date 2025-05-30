@@ -23,6 +23,7 @@ const Dashboard: React.FC = () => {
   const [newListName, setNewListName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [creatingError, setCreatingError] = useState('');
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   
   const handleCreateList = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +43,22 @@ const Dashboard: React.FC = () => {
       console.error(err);
     }
   };
-  
+
+  const handleDeleteListWithName = async (listId: string, listName: string) => {
+    if (window.confirm(`Sei sicuro di voler eliminare la lista "${listName}"?`)) {
+      try {
+        await deleteList(listId);
+        setOpenDropdown(null);
+      } catch (err) {
+        console.error('Errore nell\'eliminazione della lista:', err);
+      }
+    }
+  };
+
+  const toggleDropdown = (listId: string) => {
+    setOpenDropdown(openDropdown === listId ? null : listId);
+  };
+
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '';
     
@@ -193,18 +209,69 @@ const Dashboard: React.FC = () => {
                         {list.name}
                       </h3>
                       
+                      {/* Dropdown menu per le azioni della lista */}
                       <div className="relative group">
                         <button 
                           className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            // Toggle dropdown
+                            toggleDropdown(list.id);
                           }}
                         >
                           <MoreVertical className="h-5 w-5 text-gray-500" />
                         </button>
-                        {/* Dropdown menu would go here */}
+                        
+                        {openDropdown === list.id && (
+                          <div className="absolute right-0 top-8 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                            <div className="py-1">
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  // Implementare funzionalità di modifica nome
+                                  const newName = prompt('Nuovo nome della lista:', list.name);
+                                  if (newName && newName.trim()) {
+                                    // Qui andrà la funzione per rinominare la lista
+                                    console.log('Rinomina lista:', newName);
+                                  }
+                                  setOpenDropdown(null);
+                                }}
+                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Rinomina
+                              </button>
+                              
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  // Implementare funzionalità di condivisione
+                                  console.log('Condividi lista:', list.id);
+                                  setOpenDropdown(null);
+                                }}
+                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              >
+                                <Share2 className="h-4 w-4 mr-2" />
+                                Condividi
+                              </button>
+                              
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  // Alle linee 264 e 339, sostituisci:
+                                  handleDeleteListWithName(list.id, list.name);
+                                }}
+                                className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Elimina
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                     
@@ -238,23 +305,7 @@ const Dashboard: React.FC = () => {
                   </Link>
                   
                   <div className="bg-gray-50 dark:bg-gray-700/30 px-6 py-3 flex justify-between items-center">
-                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                      {list.owner === currentUser?.email ? (
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-1" />
-                          <span>
-                            {list.sharedWith.length > 0 
-                              ? `Condivisa con ${list.sharedWith.length} persone` 
-                              : 'Non condivisa'}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center">
-                          <Share2 className="h-4 w-4 mr-1" />
-                          <span>Condivisa da {list.owner?.split('@')[0]}</span>
-                        </div>
-                      )}
-                    </div>
+                    {/* Sezione di condivisione completamente rimossa */}
                     
                     <div className="flex space-x-2">
                       <Link 
@@ -265,7 +316,7 @@ const Dashboard: React.FC = () => {
                         <Edit className="h-4 w-4" />
                       </Link>
                       
-                      {list.owner === currentUser?.email && (
+                      {list.ownerId === currentUser?.email && (
                         <button 
                           onClick={(e) => {
                             e.preventDefault();

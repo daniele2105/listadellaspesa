@@ -1,5 +1,6 @@
 import React from 'react';
-import { ShoppingCart, Heart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
@@ -26,22 +27,18 @@ const Footer: React.FC = () => {
         <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
           <div className="flex flex-col md:flex-row justify-between">
             <div className="flex space-x-6 mb-4 md:mb-0">
-              <a href="#" className="text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 text-sm">
+              <Link to="/privacy" className="text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 text-sm">
                 Privacy
-              </a>
-              <a href="#" className="text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 text-sm">
+              </Link>
+              <Link to="/terms" className="text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 text-sm">
                 Termini
-              </a>
+              </Link>
               <a href="#" className="text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 text-sm">
                 Contatti
               </a>
               <a href="#" className="text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 text-sm">
                 GitHub
               </a>
-            </div>
-            
-            <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
-              Creato con <Heart className="h-4 w-4 text-error-500 mx-1" /> usando React & Firebase
             </div>
           </div>
         </div>

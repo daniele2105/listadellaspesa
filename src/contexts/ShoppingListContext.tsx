@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   collection, 
   doc,
@@ -31,8 +31,42 @@ export interface ShoppingList {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   products: Product[];
-  owner: string;
+  ownerId: string;
   sharedWith: string[];
+  ownerEmail?: string;
+  ownerDisplayName?: string; // Nuovo campo
+}
+
+// Helper function to get user info by email
+async function getUserInfoByEmail(email: string): Promise<{uid: string, displayName: string} | null> {
+  try {
+    const usersQuery = query(
+      collection(db, 'users'),
+      where('email', '==', email)
+    );
+    
+    return new Promise((resolve) => {
+      const unsubscribe = onSnapshot(usersQuery, (snapshot) => {
+        unsubscribe();
+        if (!snapshot.empty) {
+          const userDoc = snapshot.docs[0];
+          const userData = userDoc.data();
+          resolve({
+            uid: userData.uid,
+            displayName: userData.displayName || userData.email?.split('@')[0] || 'Utente'
+          });
+        } else {
+          resolve(null);
+        }
+      }, (error) => {
+        console.error('Error getting user info by email:', error);
+        resolve(null);
+      });
+    });
+  } catch (error) {
+    console.error('Error getting user info by email:', error);
+    return null;
+  }
 }
 
 interface ShoppingListContextType {
@@ -59,7 +93,39 @@ export function useShoppingList() {
   return context;
 }
 
-export function ShoppingListProvider({ children }: { children: React.ReactNode }) {
+// Helper function to get user UID by email
+async function getUserIdByEmail(email: string): Promise<string | null> {
+  try {
+    const usersQuery = query(
+      collection(db, 'users'),
+      where('email', '==', email)
+    );
+    
+    return new Promise((resolve) => {
+      const unsubscribe = onSnapshot(usersQuery, (snapshot) => {
+        unsubscribe();
+        if (!snapshot.empty) {
+          const userDoc = snapshot.docs[0];
+          resolve(userDoc.data().uid);
+        } else {
+          resolve(null);
+        }
+      }, (error) => {
+        console.error('Error getting user ID by email:', error);
+        resolve(null);
+      });
+    });
+  } catch (error) {
+    console.error('Error getting user ID by email:', error);
+    return null;
+  }
+}
+
+interface ShoppingListProviderProps {
+  children: ReactNode;
+}
+
+export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
   const [lists, setLists] = useState<ShoppingList[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,15 +141,15 @@ export function ShoppingListProvider({ children }: { children: React.ReactNode }
     setLoading(true);
     setError(null);
   
-    // Query lists where the current user is either the owner or shared with
+    // Query lists where the current user is either the owner or shared with (using UID)
     const listsQuery = query(
       collection(db, 'shoppingLists'),
-      where('owner', '==', currentUser.email)
+      where('ownerId', '==', currentUser.uid) // Changed to use UID
     );
   
     const sharedListsQuery = query(
       collection(db, 'shoppingLists'),
-      where('sharedWith', 'array-contains', currentUser.email)
+      where('sharedWith', 'array-contains', currentUser.uid) // Changed to use UID
     );
   
     let ownedLists: ShoppingList[] = [];
@@ -153,8 +219,9 @@ export function ShoppingListProvider({ children }: { children: React.ReactNode }
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
         products: [],
-        owner: currentUser.email,
-        sharedWith: []
+        ownerId: currentUser.uid, // Changed to use UID
+        sharedWith: [],
+        ownerEmail: currentUser.email // Keep email for display
       };
       
       console.log('Creating list with data:', newList);
@@ -254,25 +321,62 @@ export function ShoppingListProvider({ children }: { children: React.ReactNode }
   }
 
   async function shareList(listId: string, email: string) {
+    if (!currentUser) throw new Error('User not authenticated');
+    
     try {
-      if (!email) throw new Error('Email is required');
+      // Usa getUserInfoByEmail per ottenere sia uid che displayName
+      const userInfo = await getUserInfoByEmail(email);
+      if (!userInfo) {
+        throw new Error('Utente non trovato');
+      }
       
       const listRef = doc(db, 'shoppingLists', listId);
-      await updateDoc(listRef, {
-        sharedWith: arrayUnion(email),
-        updatedAt: Timestamp.now()
+      
+      // Ottieni anche le informazioni del proprietario corrente
+      const currentUserQuery = query(
+        collection(db, 'users'),
+        where('uid', '==', currentUser.uid)
+      );
+      
+      return new Promise((resolve, reject) => {
+        const unsubscribe = onSnapshot(currentUserQuery, async (snapshot) => {
+          unsubscribe();
+          try {
+            let ownerDisplayName = 'Utente';
+            if (!snapshot.empty) {
+              const userData = snapshot.docs[0].data();
+              ownerDisplayName = userData.displayName || userData.email?.split('@')[0] || 'Utente';
+            }
+            
+            await updateDoc(listRef, {
+              sharedWith: arrayUnion(userInfo.uid),
+              ownerDisplayName: ownerDisplayName // Salva il nome del proprietario
+            });
+            
+            resolve(undefined);
+          } catch (error) {
+            reject(error);
+          }
+        }, reject);
       });
-    } catch (err) {
-      setError('Failed to share list');
-      throw err;
+    } catch (error) {
+      console.error('Error sharing list:', error);
+      throw error;
     }
   }
 
   async function removeSharedUser(listId: string, email: string) {
     try {
+      // Get user UID by email
+      const userId = await getUserIdByEmail(email);
+      
+      if (!userId) {
+        throw new Error('User not found');
+      }
+      
       const listRef = doc(db, 'shoppingLists', listId);
       await updateDoc(listRef, {
-        sharedWith: arrayRemove(email),
+        sharedWith: arrayRemove(userId), // Use UID instead of email
         updatedAt: Timestamp.now()
       });
     } catch (err) {
@@ -281,7 +385,7 @@ export function ShoppingListProvider({ children }: { children: React.ReactNode }
     }
   }
 
-  const value = {
+  const value: ShoppingListContextType = {
     lists,
     createList,
     updateList,
@@ -296,7 +400,7 @@ export function ShoppingListProvider({ children }: { children: React.ReactNode }
   };
 
   return (
-    <ShoppingListContext.Provider value={value}>
+<ShoppingListContext.Provider value={value}>
       {children}
     </ShoppingListContext.Provider>
   );

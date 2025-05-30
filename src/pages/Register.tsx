@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Mail, Lock, UserPlus, AlertCircle } from 'lucide-react';
+import { ShoppingCart, Mail, Lock, UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Layout/Navbar';
 import Footer from '../components/Layout/Footer';
@@ -9,17 +9,19 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [displayName, setDisplayName] = useState(''); // Nuovo campo
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState('');
   
-  const { register, loginWithGoogle } = useAuth();
+  const { register, loginWithGoogle, resendVerificationEmail } = useAuth();
   const navigate = useNavigate();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     
-    if (!email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword || !displayName) {
       setError('Compila tutti i campi');
       return;
     }
@@ -35,12 +37,18 @@ const Register: React.FC = () => {
     }
     
     try {
+      setError('');
       setLoading(true);
-      await register(email, password);
-      navigate('/dashboard');
-    } catch (err) {
-      setError('Registrazione fallita. Riprova.');
-      console.error(err);
+      const result = await register(email, password, displayName); // Passa il displayName
+      
+      if (result.emailSent) {
+        setEmailSent(true);
+        setVerificationMessage('Email di verifica inviata! Controlla la tua casella di posta e clicca sul link per verificare il tuo account.');
+      } else {
+        setVerificationMessage('Registrazione completata, ma non è stato possibile inviare l\'email di verifica. Puoi richiederne una nuova.');
+      }
+    } catch (error: any) {
+      setError('Errore durante la registrazione: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -84,8 +92,59 @@ const Register: React.FC = () => {
             </div>
           )}
           
+          {emailSent && (
+            <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <CheckCircle className="h-5 w-5 text-green-400" aria-hidden="true" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-green-800">
+                    {verificationMessage}
+                  </p>
+                  <div className="mt-2">
+                    <button
+                      onClick={async () => {
+                        try {
+                          await resendVerificationEmail();
+                          setVerificationMessage('Email di verifica inviata nuovamente!');
+                        } catch (error: any) {
+                          setError(error.message);
+                        }
+                      }}
+                      className="text-sm text-green-600 hover:text-green-500 underline"
+                    >
+                      Invia nuovamente email di verifica
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
+              <div>
+                <label htmlFor="displayName" className="label">
+                  Nome utente
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <UserPlus className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="displayName"
+                    name="displayName"
+                    type="text"
+                    autoComplete="name"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="input pl-10"
+                    placeholder="Il tuo nome"
+                  />
+                </div>
+              </div>
+              
               <div>
                 <label htmlFor="email" className="label">
                   Email

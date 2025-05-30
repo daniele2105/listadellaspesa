@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Shopping Lists Collection
+    match /shoppingLists/{listId} {
+      // Allow read if user is owner or in sharedWith array
+      allow read: if request.auth != null && 
+        (resource.data.ownerId == request.auth.uid || 
+         request.auth.uid in resource.data.sharedWith);
+      
+      // Allow create if user is authenticated and sets themselves as owner
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.ownerId &&
+        request.resource.data.keys().hasAll(['name', 'ownerId', 'sharedWith', 'products', 'createdAt', 'updatedAt']);
+      
+      // Allow update if user is owner or in sharedWith array
+      allow update: if request.auth != null && 
+        (resource.data.ownerId == request.auth.uid || 
+         request.auth.uid in resource.data.sharedWith) &&
+        // Prevent changing ownership
+        resource.data.ownerId == request.resource.data.ownerId;
+      
+      // Allow delete only if user is owner
+      allow delete: if request.auth != null && 
+        resource.data.ownerId == request.auth.uid;
+    }
+    
+    // Users Collection (for storing user profiles)
+    match /users/{userId} {
+      // Users can read and write their own profile
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Allow reading other users' profiles for sharing functionality
+      allow read: if request.auth != null;
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
