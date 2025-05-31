@@ -1589,4 +1589,4 @@ const handleShareList = async (listId: string, email: string) => {
                         </button>
                       )}
 
-                      {list.owner
+                      {list.owner// Force rebuild
