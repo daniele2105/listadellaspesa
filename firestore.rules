@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Funzioni helper per validazione
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -10,60 +10,41 @@ service cloud.firestore {
       return request.auth.uid == resource.data.ownerId;
     }
     
-    function isSharedUser(resource) {
+    function isSharedWith(resource) {
       return request.auth.uid in resource.data.sharedWith;
     }
     
-    function hasValidFields(requiredFields) {
-      return request.resource.data.keys().hasAll(requiredFields);
-    }
-    
-    function isValidListName() {
-      return request.resource.data.name is string && 
-             request.resource.data.name.size() > 0 && 
-             request.resource.data.name.size() <= 100;
-    }
-    
-    function isValidSharedWith() {
-      return request.resource.data.sharedWith is list && 
-             request.resource.data.sharedWith.size() <= 10;
+    function hasValidFields(requiredFields, optionalFields) {
+      let allFields = requiredFields.concat(optionalFields);
+      return request.resource.data.keys().hasAll(requiredFields) &&
+             request.resource.data.keys().hasOnly(allFields);
     }
     
     // Shopping Lists Collection
     match /shoppingLists/{listId} {
       allow read: if isAuthenticated() && 
-        (isOwner(resource) || isSharedUser(resource));
+        (isOwner(resource) || isSharedWith(resource));
       
       allow create: if isAuthenticated() && 
         request.auth.uid == request.resource.data.ownerId &&
-        hasValidFields(['name', 'ownerId', 'sharedWith', 'products', 'createdAt', 'updatedAt', 'ownerEmail']) &&
-        isValidListName() &&
-        isValidSharedWith() &&
-        request.resource.data.createdAt == request.time &&
-        request.resource.data.updatedAt == request.time;
+        hasValidFields(
+          ['name', 'ownerId', 'ownerEmail', 'sharedWith', 'products', 'createdAt'],
+          ['updatedAt']
+        );
       
       allow update: if isAuthenticated() && 
-        (isOwner(resource) || isSharedUser(resource)) &&
-        resource.data.ownerId == request.resource.data.ownerId &&
-        isValidListName() &&
-        isValidSharedWith() &&
-        request.resource.data.updatedAt == request.time;
+        (isOwner(resource) || isSharedWith(resource)) &&
+        hasValidFields(
+          ['name', 'ownerId', 'ownerEmail', 'sharedWith', 'products', 'createdAt'],
+          ['updatedAt']
+        );
       
       allow delete: if isAuthenticated() && isOwner(resource);
     }
     
     // Users Collection
     match /users/{userId} {
-      allow read: if isAuthenticated() && request.auth.uid == userId;
-      allow create: if isAuthenticated() && 
-        request.auth.uid == userId;
-      allow update: if isAuthenticated() && 
-        request.auth.uid == userId;
-    }
-    
-    // Deny all other access
-    match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
   }
 }
