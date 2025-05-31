@@ -18,12 +18,16 @@ import Footer from '../components/Layout/Footer';
 
 const Dashboard: React.FC = () => {
   const { currentUser } = useAuth();
-  const { lists, createList, deleteList, loading, error } = useShoppingList();
+  const { lists, createList, deleteList, updateList, shareList, loading, error } = useShoppingList();
   
   const [newListName, setNewListName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [creatingError, setCreatingError] = useState('');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [isRenaming, setIsRenaming] = useState<string | null>(null);
+  const [isSharing, setIsSharing] = useState<string | null>(null);
+  const [shareEmail, setShareEmail] = useState('');
+  const [renameValue, setRenameValue] = useState('');
   
   const handleCreateList = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -229,12 +233,8 @@ const Dashboard: React.FC = () => {
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  // Implementare funzionalità di modifica nome
-                                  const newName = prompt('Nuovo nome della lista:', list.name);
-                                  if (newName && newName.trim()) {
-                                    // Qui andrà la funzione per rinominare la lista
-                                    console.log('Rinomina lista:', newName);
-                                  }
+                                  setRenameValue(list.name);
+                                  setIsRenaming(list.id);
                                   setOpenDropdown(null);
                                 }}
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -247,8 +247,7 @@ const Dashboard: React.FC = () => {
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  // Implementare funzionalità di condivisione
-                                  console.log('Condividi lista:', list.id);
+                                  setIsSharing(list.id);
                                   setOpenDropdown(null);
                                 }}
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -344,3 +343,1250 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
+
+const handleRenameList = async (listId: string, newName: string) => {
+  if (!newName.trim()) return;
+  
+  try {
+    await updateList(listId, { name: newName.trim() });
+    setIsRenaming(null);
+    setRenameValue('');
+    setOpenDropdown(null);
+  } catch (err) {
+    console.error('Errore nel rinominare la lista:', err);
+  }
+};
+
+const handleShareList = async (listId: string, email: string) => {
+  if (!email.trim()) return;
+  
+  try {
+    await shareList(listId, email.trim());
+    setIsSharing(null);
+    setShareEmail('');
+    setOpenDropdown(null);
+  } catch (err) {
+    console.error('Errore nella condivisione della lista:', err);
+  }
+};
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.ownerId === currentUser?.uid && (
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteList(list.id);
+                          }}
+                          className="p-1.5 rounded-full text-gray-600 hover:text-error-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-error-400 dark:hover:bg-gray-700"
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {list.owner
